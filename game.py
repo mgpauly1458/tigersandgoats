@@ -11,6 +11,7 @@ __status__ = "Dev"
 # @todo fix global imports
 import time
 import tkinter as Tk
+from tkinter import messagebox
 import os
 import numpy as np
 import sys
@@ -30,6 +31,7 @@ hg.Board().clearBoard()
 class Main():
 
     def __init__(self,mode):
+        self.mode = mode
         # For self.turn (is it the computer's turn?) 
         self.turn = False
         # self.move is used when a piece is used to move from one location to another. True
@@ -54,6 +56,8 @@ class Main():
         self.window.resizable(0,0)
         # self.window.tk_focusFollowsMouse()
         # self.window.tk.call('tk', 'scaling', 17)
+
+#import images into tk with pillow
         self.tiger = ImageTk.PhotoImage(tiger_img)
         self.goat = ImageTk.PhotoImage(goat_img)
         self.empty = ImageTk.PhotoImage(file='./images/empty.png') 
@@ -84,6 +88,9 @@ class Main():
         self.selectedToggle()
 
         # Buttons
+#b0 is top place
+#XK, X = column, K = row
+# 'X' = tiger, 'O' = goat
         self.btn1  = Tk.Button(self.window, image=self.empty, command=lambda : self.button_position('b0')).place(x=boardSize/2,y=boardSize/10,height=30,width=30,anchor=Tk.CENTER)
         self.btn2  = Tk.Button(self.window, image=self.empty, command=lambda : self.button_position('a1')).place(x=boardSize/10,y=boardSize/2 - 70,height=30,width=30,anchor=Tk.CENTER)
         self.btn3  = Tk.Button(self.window, image=self.empty, command=lambda : self.button_position('a2')).place(x=boardSize/10,y=boardSize/2,height=30,width=30,anchor=Tk.CENTER)
@@ -121,7 +128,7 @@ class Main():
         fn.printAndLog('========================')
         attempts = fn.textCount('Attempts: ')
         fn.printAndLog('Attempts: ' +  str(attempts))
-        fn.printAndLog('Game Mode: '+ mode)
+        fn.printAndLog('Game Mode: '+ self.mode)
         fn.printAndLog('========================')
 
 #    def start_clock():
@@ -142,16 +149,16 @@ class Main():
 
         self.moveCount_prev = self.moveCount
 
-        if mode == 'pvp':
+        if self.mode == 'pvp':
             self.pvpMode(pos)
-        elif mode == 'goatPlayer':
+        elif self.mode == 'goatPlayer':
             self.goatMode(pos)
-        elif mode == 'tigerPlayer':
+        elif self.mode == 'tigerPlayer':
             self.tigerMode(pos)        
 
         if self.moveCount_prev != self.moveCount:
             self.update()
-            self.collectData()
+            # self.collectData()
 
 #        self.continue_clock()
         self.window.mainloop()                
@@ -163,7 +170,7 @@ class Main():
                 print('You must select any empty or goat positions')
             elif hg.Position(pos[0],pos[1]).content() == () and self.move == False:
                 if self.goatCount < 15:
-                    Goat(pos).place()
+                    hg.Goat(pos).place()
                     self.turn = True
                 else: 
                     print("exceeded goats amount")
@@ -180,7 +187,7 @@ class Main():
                     print("Goats can only be moved if 15 goats are placed")
             else:
                 
-                if Goat(self.location).move(pos) == 1:
+                if hg.Goat(self.location).move(pos) == 1:
                     self.move = False
                     self.location = ''
                     self.turn = True
@@ -205,7 +212,7 @@ class Main():
                 # print('DEBUG: location',self.location)
                 # print('DEBUG: secondAdjacent',Piece(self.location).secondAdjacent(pos))
                 # print('DEBUG: Adjacent',Piece(self.location).adjacent(pos))
-                print('DEBUG: possiblemoves 2 ', hg.Piece(self.location).possibleMoves())
+                # print('DEBUG: possiblemoves 2 ', hg.Piece(self.location).possibleMoves())
                 if pos in hg.Position(self.location[0],self.location[1]).get_neighbors():
                     tigerMoveFlag = hg.Tiger(self.location).move(pos) 
 
@@ -231,26 +238,32 @@ class Main():
                     self.location = ''
                     self.turn = True
 
+# self.turn and self.move have to be false to move
     def goatMode(self,pos):
-        
         if self.turn == False:
+
+# checks, if button contains tiger ('X')
             if hg.Position(pos[0],pos[1]).content() == 'X':
                 print('You must select any empty or goat positions')
+
+# checks, if button is empty      
             elif hg.Position(pos[0],pos[1]).content() == ():
                 if self.move == False:
                     if self.goatCount < 15:
-                        Goat(pos).place()
+                        hg.Goat(pos).place()
                         self.turn = True
                     else: 
                         print("All 15 goats placed already")
                 if self.move == True:
-                    if Goat(self.location).move(pos) == 1:
+                    if hg.Goat(self.location).move(pos) == 1:
                         # should enter this line if it is a valid move
                         self.turn = True
                         self.move = False
                         self.location = ''
                     else:
                         print('Invalid move, try again')
+
+# checks, if button contains goat ('O')            
             elif hg.Position(pos[0],pos[1]).content() == 'O':
                 if self.goatCount == 15:
                     if self.move == True:
@@ -263,7 +276,7 @@ class Main():
                             self.location = ''
                         else:
                             # trying to place a goat on another goat. Invalid move, just ignore and reset
-                            if Goat(self.location).move(pos) == 1:
+                            if hg.Goat(self.location).move(pos) == 1:
                                 print('Something is majorly wrong!!')
                             print('Invalid move attempted from ',self.location,' to ',pos,'. Try again.')
                             self.turn = False
@@ -289,7 +302,6 @@ class Main():
                 if hg.Position(tiger[0],tiger[1]).get_captures() != None:
                     for capture in hg.Position(tiger[0],tiger[1]).get_captures():
                         possibleCaptures[tiger] = capture
-            print(possibleCaptures)
 
             # chooses one of the tigers
             tigerPos = choice(tigers)
@@ -398,13 +410,13 @@ class Main():
             if self.goatCount == 15:
                 goatPos = choice(goats)
 
-                while len(Goat(goatPos).possibleMoves()) == 0:
+                while len(hg.Goat(goatPos).possibleMoves()) == 0:
                     if len(goats) != 0:
                         goats.remove(goatPos)
                     else:
                         return
 
-                goatChoice = choice(Goat(goatPos).possibleMoves())
+                goatChoice = choice(hg.Goat(goatPos).possibleMoves())
                 # print('DEBUG goatChoice ',goatChoice)
 
                 if pos in goatPos:
@@ -412,11 +424,11 @@ class Main():
 
                 # print('###### Debug ######')
                 # print('goat to move:', goatPos)
-                # print('Possible moves: ', Goat(goatPos).possibleMoves())
-                # print('Choice the goat made: ',choice(Goat(goatPos).possibleMoves()))
+                # print('Possible moves: ', hg.Goat(goatPos).possibleMoves())
+                # print('Choice the goat made: ',choice(hg.Goat(goatPos).possibleMoves()))
 
                 if goatChoice in hg.Position(goatPos[0],goatPos[1]).get_neighbors():
-                    goatMoveFlag = Goat(goatPos).move(goatChoice) 
+                    goatMoveFlag = hg.Goat(goatPos).move(goatChoice) 
 
                     if goatMoveFlag == 1:
                         self.move = False
@@ -431,7 +443,7 @@ class Main():
                     self.turn = False
             else:
                 goatChoice = choice(emptyPos)
-                Goat(goatChoice).place()
+                hg.Goat(goatChoice).place()
                 self.move = False
                 self.turn = True
 
@@ -465,11 +477,12 @@ class Main():
 
         # Endgame
         if possibleMovesCount == 0:
-            messagebox.showinfo("Game Over: Goat wins") 
+            Tk.messagebox.showinfo("Game Over: hg.Goat wins") 
             return
 
         if self.goatEaten == 5:
-            messagebox.showinfo("Game Over: Tiger wins") 
+            print(Tk.TkVersion)
+            Tk.messagebox.showinfo("Game Over: Tiger wins") 
             return
 
     def collectData(self):
@@ -479,7 +492,7 @@ class Main():
         tigers = fn.tigerPositions(hg.Board().boardPositions)
         fn.printAndLog("Tigers positions: " + str(tigers))
         fn.printAndLog(str(hg.Board().boardPositions))
-        editDistance = edit_distance(hg.Board().boardPositions)
+        editDistance = fn.edit_distance(hg.Board().boardPositions)
         #value = new_value(hg.Board().boardPositions) <--------------
         fn.printAndLog("Edit distance: " + str(editDistance))
         
@@ -495,7 +508,7 @@ class Main():
         if self.turn:
             self.turntext.set("Turn: Tiger")
         else:
-            self.turntext.set("Turn: Goat")
+            self.turntext.set("Turn: hg.Goat")
 
     def change_button(self,pos,img):
         # change the images of the board pieces
@@ -554,11 +567,11 @@ class Main():
         hg.Tiger('c1').place()
         hg.Tiger('d1').place()
 
-        if mode == 'tigerPlayer':
+        if self.mode == 'tigerPlayer':
             goats = goatPositions(hg.Board().boardPositions)
             empty = emptyPositions(hg.Board().boardPositions)
             emptyPos = choice(empty)
-            Goat(emptyPos).place()
+            hg.Goat(emptyPos).place()
             self.turn = True
         self.update()
 #        self.start_clock()
