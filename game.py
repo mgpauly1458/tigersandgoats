@@ -19,6 +19,7 @@ import huligutta as hg
 import functions as fn
 from PIL import ImageTk, Image
 from random import randint, choice
+import maxwellFunctions as mf
 
 # Board parts
 numPosition = 23 
@@ -38,6 +39,7 @@ class Main():
         # if a piece is currently under move (ie, a piece has been clicked, and is not yet 
         # transferred somewhere else
         self.move = False 
+
 
 
 #load images
@@ -158,6 +160,8 @@ class Main():
 
         if self.moveCount_prev != self.moveCount:
             self.update()
+            mf.potentialGoatPositions(hg.Board().boardPositions)
+
             # self.collectData()
 
 #        self.continue_clock()
@@ -240,6 +244,7 @@ class Main():
 
 # self.turn and self.move have to be false to move
     def goatMode(self,pos):
+
         if self.turn == False:
 
 # checks, if button contains tiger ('X')
@@ -357,6 +362,7 @@ class Main():
                 self.move = False
                 self.location = ''
                 self.turn = True
+
 
     def tigerMode(self,pos):
 
