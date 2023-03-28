@@ -160,8 +160,8 @@ class Main():
 
         if self.moveCount_prev != self.moveCount:
             self.update()
-            mf.potentialGoatPositions(hg.Board().boardPositions)
-
+            #mf.potentialGoatPositions(hg.Board().boardPositions)
+            print(mf.allGoatPositions(hg.Board().boardPositions, self.goatCount))
             # self.collectData()
 
 #        self.continue_clock()

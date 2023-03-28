@@ -8,7 +8,7 @@ boardGraph = {
     'b1': ['b0', 'a1', 'b2', 'c1'],
     'b2': ['b1', 'c2', 'b3', 'a2'],
     'b3': ['b2', 'c3', 'b4', 'a3'],
-    'b4': ['a3', 'b3', 'c4'],
+    'b4': ['b3', 'c4'],
     'c1': ['b0', 'd1', 'c2', 'b1'],
     'c2': ['c1', 'd2', 'c3', 'b2'],
     'c3': ['c2', 'd3', 'c4', 'b3'],
@@ -20,7 +20,7 @@ boardGraph = {
     'e1': ['b0', 'f1', 'e2', 'd1'],
     'e2': ['e1', 'f2', 'e3', 'd2'],
     'e3': ['e2', 'f3', 'e4', 'd3'],
-    'e4': ['e3', 'f3', 'd4'],
+    'e4': ['e3', 'd4'],
     'f1': ['e1', 'f2'],
     'f2': ['f1', 'f3', 'e2'],
     'f3': ['f2', 'e4', 'e3'],
@@ -99,8 +99,11 @@ def blockedByTiger(tigerPos, goatPos):
 
     return blocked
 
+# returns list of all 'safe' goat positions
+# a goat is not in danger of being killed in this position
+# only shows where a goat can be placed, does not account for what phase of the game its in
+# (can be used in conjunction with other functions to implement phase 2 movement)
 def potentialGoatPositions(boardPositions):
-
     emptyPos = fn.emptyPositions(boardPositions)
     tigerPos = fn.tigerPositions(boardPositions)
     goatPos = fn.goatPositions(boardPositions)
@@ -118,3 +121,30 @@ def potentialGoatPositions(boardPositions):
     potentialPositions = [x for x in emptyPos if (x not in invalidFutureGoatPosition)]
     print("potential goat positions: ", potentialPositions)
     return potentialPositions
+
+
+# call with Board.boardPositions
+def allGoatPositionsPhase1(boardPositions):
+    emptyPos = fn.emptyPositions(boardPositions)
+    tigerPos = fn.tigerPositions(boardPositions)
+    goatPos = fn.goatPositions(boardPositions)
+
+    temp = [x for x in emptyPos if x not in tigerPos]
+    temp = [x for x in temp if x not in goatPos]
+    return temp
+
+def allGoatPositionsPhase2(boardPositions):
+    positions = set({})
+    goatPos = fn.goatPositions(boardPositions)
+    emptyPos = fn.emptyPositions(boardPositions)
+    for goat in goatPos:
+        adjPos = boardGraph[goat]
+        for x in adjPos:
+            if x in emptyPos:
+                positions.add(x)
+    return positions
+
+def allGoatPositions(boardPositions, goatCount):
+    if goatCount >= 15:
+        return allGoatPositionsPhase2(boardPositions)
+    return allGoatPositionsPhase1(boardPositions)
